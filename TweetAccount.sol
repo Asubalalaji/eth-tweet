@@ -34,63 +34,68 @@ contract TweetAccount {
 	address _adminAddress;
 	
 	// constructor
-	function TweetAccount() {
+	constructor() {
 		_numberOfTweets = 0;
 		_adminAddress = msg.sender;
 	}
 	
 	// returns true if caller of function ("sender") is admin
-	function isAdmin() constant returns (bool isAdmin) {
-		return msg.sender == _adminAddress;
-	}
+    function isAdmin() public view returns (bool isAdmin) {
+    // function implementation
+    }
+
+
 	
 	// create new tweet
-	function tweet(string tweetString) returns (int result) {
-		if (!isAdmin()) {
-			// only owner is allowed to create tweets for this account
-			result = -1;
-		} else if (bytes(tweetString).length > 160) {
-			// tweet contains more than 160 bytes
-			result = -2;
-		} else {
-			_tweets[_numberOfTweets].timestamp = now;
-			_tweets[_numberOfTweets].tweetString = tweetString;
-			_numberOfTweets++;
-			result = 0; // success
-		}
-	}
+ function tweet(string memory tweetString) public returns (int result) {
+    if (!isAdmin()) {
+        // only owner is allowed to create tweets for this account
+        result = -1;
+    } else if (bytes(tweetString).length > 160) {
+        // tweet contains more than 160 bytes
+        result = -2;
+    } else {
+        _tweets[_numberOfTweets].timestamp = block.timestamp; // "now" is deprecated, use "block.timestamp"
+        _tweets[_numberOfTweets].tweetString = tweetString;
+        _numberOfTweets++;
+        result = 0; // success
+    }
+}
+
 	
-	function getTweet(uint tweetId) constant returns (string tweetString, uint timestamp) {
-		// returns two values
-		tweetString = _tweets[tweetId].tweetString;
-		timestamp = _tweets[tweetId].timestamp;
-	}
+	function getTweet(uint tweetId) public view returns (string memory tweetString, uint timestamp) {
+    // function implementation
+    }
+
 	
-	function getLatestTweet() constant returns (string tweetString, uint timestamp, uint numberOfTweets) {
-		// returns three values
-		tweetString = _tweets[_numberOfTweets - 1].tweetString;
-		timestamp = _tweets[_numberOfTweets - 1].timestamp;
-		numberOfTweets = _numberOfTweets;
-	}
+	function getLatestTweet() public view returns (string memory tweetString, uint timestamp, uint numberOfTweets) {
+    // returns three values
+    tweetString = _tweets[_numberOfTweets - 1].tweetString;
+    timestamp = _tweets[_numberOfTweets - 1].timestamp;
+    numberOfTweets = _numberOfTweets;
+   }
+
 	
-	function getOwnerAddress() constant returns (address adminAddress) {
-		return _adminAddress;
-	}
-	
-	function getNumberOfTweets() constant returns (uint numberOfTweets) {
-		return _numberOfTweets;
-	}
+	function getOwnerAddress() public view returns (address adminAddress) {
+    // function implementation
+}
+
+	function getNumberOfTweets() public view returns (uint numberOfTweets) {
+    // function implementation
+}
+
 
 	// other users can send donations to your account: use this function for donation withdrawal
-	function adminRetrieveDonations(address receiver) {
-		if (isAdmin()) {
-			receiver.send(this.balance);
-		}
-	}
-	
-	function adminDeleteAccount() {
-		if (isAdmin()) {
-			suicide(_adminAddress); // this is a predefined function, it deletes the contract and returns all funds to the owner's address
-		}
-	}	
+    function adminRetrieveDonations(address receiver) public {
+    if (isAdmin()) {
+        payable(receiver).transfer(address(this).balance);
+    }
+     
+    }
+
+	function adminDeleteAccount() public {
+    if (isAdmin()) {
+        selfdestruct(payable(_adminAddress)); // Deletes the contract and sends all funds to the owner's address
+    }
+}	
 }
